@@ -13,15 +13,22 @@ const Hero = {
     defence: 100,
     power: 120,
     weapon: 250,
-    shield: 200
+    shield: 200,
+    equiped: false
 };
-const actions = new Map([
+const heroActions = new Map([
     ['?', help],
     ['hero', heroDetails],
     ['dragon', dragonDetails],
     ['attack', attack],
     ['exit', process_1.exit],
+    ['skip', () => { }],
+    ['defend', defend]
 ]);
+const dragonActions = [
+    dragonAttack,
+    sleep
+];
 console.log('Hello hero! Today you can go fight the dragon.');
 const ready = (0, utils_1.ask)('Are you ready? (y/n):');
 if (ready.toLocaleLowerCase() === 'n') {
@@ -31,21 +38,66 @@ if (ready.toLocaleLowerCase() === 'n') {
 console.log("You are next to the dragon.\n");
 info();
 while (true) {
+    removeShield();
     // Player move
-    let move = (0, utils_1.ask)('Your move? (? for help):');
-    let action = actions.get(move);
+    let move = (0, utils_1.ask)('>>>>> Your move? (? for help):');
+    let action = heroActions.get(move);
     if (action === undefined) {
         console.log('Cannot find command. Please type \'?\' for see commands.');
+        continue;
     }
     else {
         action();
     }
+    console.log('>>>>>> Dragon move');
+    // Dragon move
+    const dragonMove = (0, utils_1.random)(0, 1);
+    const dragonAction = dragonActions[dragonMove];
+    dragonAction();
+}
+// Dragon actions
+function sleep() {
+    console.log('Dragon sleeping..');
+}
+function dragonAttack() {
+    let damage = Dragon.power + Dragon.weapon - Hero.defence;
+    if (damage < 0)
+        damage = 0;
+    Hero.hp -= damage;
+    console.log(`Taked damage! \n damage: ${damage}`);
+    if (Hero.hp <= 0) {
+        console.log('U+1F3AF You die!');
+        (0, process_1.exit)();
+    }
+}
+// Hero actions
+function equipShield() {
+    if (!Hero.equiped) {
+        Hero.defence += Hero.shield;
+        Hero.equiped = true;
+    }
+}
+function removeShield() {
+    if (Hero.equiped) {
+        Hero.defence -= Hero.shield;
+        Hero.equiped = false;
+    }
+}
+function defend() {
+    console.log("You are defend's");
+    equipShield();
 }
 function attack() {
     if ((0, utils_1.random)(0, 3) !== 2) {
-        console.log("[✓] Success attack!");
         let damage = Hero.power + Hero.weapon - Dragon.defence;
+        if (damage < 0)
+            damage = 0;
         Dragon.hp -= damage;
+        console.log(`[✓] Success attack! \n damage: ${damage}    |   dragon hp: ${Dragon.hp}`);
+        if (Dragon.hp <= 0) {
+            console.log('U+1F3AF You win!');
+            (0, process_1.exit)();
+        }
     }
     else {
         console.log("[✕] Missed");
