@@ -9,47 +9,58 @@ const Dragon = {
     weapon: 0
 };
 const Hero = {
-    hp: 1000,
+    hp: 700,
     defence: 100,
     power: 120,
-    weapon: 250,
-    shield: 200,
+    weapon: 100,
+    shield: 100,
     equiped: false
 };
+let game = 1;
 const heroActions = new Map([
+    ['1', attack],
+    ['2', defend],
+    ['3', () => { }]
+]);
+const gameCommands = new Map([
     ['?', help],
-    ['hero', heroDetails],
-    ['dragon', dragonDetails],
-    ['attack', attack],
-    ['exit', process_1.exit],
-    ['skip', () => { }],
-    ['defend', defend]
+    ['h', heroDetails],
+    ['d', dragonDetails],
+    ['q', process_1.exit]
 ]);
 const dragonActions = [
     dragonAttack,
     sleep
 ];
-console.log('Hello hero! Today you can go fight the dragon.');
-const ready = (0, utils_1.ask)('Are you ready? (y/n):');
-if (ready.toLocaleLowerCase() === 'n') {
-    console.log('Okey, loser :)');
+console.log('Привет Герой, сегодня ты идешь сражаться с Драконом');
+const ready = (0, utils_1.ask)('Ты готов? (y/n) (д/н):');
+if (ready.toLocaleLowerCase() === 'n' || ready.toLocaleLowerCase() === 'н') {
+    console.log('Окей трусишка :)');
     (0, process_1.exit)();
 }
-console.log("You are next to the dragon.\n");
-info();
+console.log("Ты добрался до Дракона.\n");
+help();
 while (true) {
+    info();
     removeShield();
     // Player move
-    let move = (0, utils_1.ask)('>>>>> Your move? (? for help):');
+    let move = (0, utils_1.ask)('>>>>> Твой ход: ');
     let action = heroActions.get(move);
     if (action === undefined) {
-        console.log('Cannot find command. Please type \'?\' for see commands.');
-        continue;
+        let command = gameCommands.get(move);
+        if (command === undefined) {
+            console.log('Команда не найдена. Пожалуйста напиши \'?\' для просмотра комманд.');
+            continue;
+        }
+        else {
+            command();
+            continue;
+        }
     }
     else {
         action();
     }
-    console.log('>>>>>> Dragon move');
+    console.log('>>>>>> Дракон: ');
     // Dragon move
     const dragonMove = (0, utils_1.random)(0, 1);
     const dragonAction = dragonActions[dragonMove];
@@ -57,16 +68,17 @@ while (true) {
 }
 // Dragon actions
 function sleep() {
-    console.log('Dragon sleeping..');
+    console.log('Уснул..');
 }
 function dragonAttack() {
+    console.log(`Атакует!`);
     let damage = Dragon.power + Dragon.weapon - Hero.defence;
     if (damage < 0)
         damage = 0;
     Hero.hp -= damage;
-    console.log(`Taked damage! \n damage: ${damage}`);
+    console.log(`Ты получил ${damage} урона!`);
     if (Hero.hp <= 0) {
-        console.log('U+1F3AF You die!');
+        console.log('Ты мертв! :(');
         (0, process_1.exit)();
     }
 }
@@ -84,7 +96,7 @@ function removeShield() {
     }
 }
 function defend() {
-    console.log("You are defend's");
+    console.log("[Защита]");
     equipShield();
 }
 function attack() {
@@ -93,33 +105,39 @@ function attack() {
         if (damage < 0)
             damage = 0;
         Dragon.hp -= damage;
-        console.log(`[✓] Success attack! \n damage: ${damage}    |   dragon hp: ${Dragon.hp}`);
+        console.log(`[✓] Упешная атака. ${damage} урона!`);
         if (Dragon.hp <= 0) {
-            console.log('U+1F3AF You win!');
+            console.log('Ты победил дракона! :)');
             (0, process_1.exit)();
         }
     }
     else {
-        console.log("[✕] Missed");
+        console.log("[✕] Промахнулся");
     }
-    info();
 }
 function help() {
-    console.log("Help");
-    console.log("?      ->  help");
-    console.log("hero   ->  hero details");
-    console.log("dragon ->  dragon details");
-    console.log("attack ->  attack dragon");
-    console.log("exit   ->  run away from the fight");
+    console.log("Помощь");
+    console.log("-------- Игра -----------");
+    console.log("?      ->  список комманд");
+    console.log("h      ->  данные героя");
+    console.log("d      ->  данные Дракона");
+    console.log("\n-------- Герой -----------");
+    console.log("1      ->  Атаковать");
+    console.log("2      ->  Защита");
+    console.log("3      ->  Пропустить ход");
+    console.log("q   ->  Убежать");
 }
 function info() {
-    console.log(`--------------------------------------------------`);
-    console.log(`Hero: ${Hero.hp}       |      Dragon: ${Dragon.hp}`);
-    console.log(`--------------------------------------------------`);
+    console.log(`----------- ${game++} ------------`);
+    console.log("Герой: " + Hero.hp);
+    console.log("Дракон: " + Dragon.hp);
+    // console.log(`--------------------------------------------------`);
+    // console.log(`Герой: ${Hero.hp}       |      Дракон: ${Dragon.hp}`);
+    // console.log(`--------------------------------------------------`);
 }
 function heroDetails() {
-    console.log(`\nHero details: \n hp:      ${Hero.hp}\n defence: ${Hero.defence}\n power:   ${Hero.power}\n weapon:  ${Hero.weapon}\n shield:  ${Hero.shield}\n`);
+    console.log(`\nДетали Героя: \n hp:      ${Hero.hp}\n defence: ${Hero.defence}\n power:   ${Hero.power}\n weapon:  ${Hero.weapon}\n shield:  ${Hero.shield}\n`);
 }
 function dragonDetails() {
-    console.log(`\nDragon details: \n hp:      ${Dragon.hp}\n defence: ${Dragon.defence}\n power:   ${Dragon.power}\n weapon:  ${Dragon.weapon}\n`);
+    console.log(`\Детали Дракона: \n hp:      ${Dragon.hp}\n defence: ${Dragon.defence}\n power:   ${Dragon.power}\n weapon:  ${Dragon.weapon}\n`);
 }
