@@ -29,7 +29,7 @@ const heroActions = new Map<string, any>(
 
 const gameCommands = new Map<string, any>(
     [
-        [ '?'     , help          ],
+        [ '?', help          ],
         [ 'h'  , heroDetails   ],
         [ 'd', dragonDetails ],
         [ 'q'  , exit          ]
@@ -59,6 +59,7 @@ while(true) {
 
     removeShield()
 
+    
     // Player move
     let move = ask('>>>>> Твой ход: ')
     let action = heroActions.get(move)
@@ -168,10 +169,6 @@ function info() {
     console.log(`----------- ${game++} ------------`);
     console.log("Герой: "  + Hero.hp);
     console.log("Дракон: " + Dragon.hp);
-    
-    // console.log(`--------------------------------------------------`);
-    // console.log(`Герой: ${Hero.hp}       |      Дракон: ${Dragon.hp}`);
-    // console.log(`--------------------------------------------------`);
 }
 
 function heroDetails() {
