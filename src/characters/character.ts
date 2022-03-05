@@ -1,32 +1,90 @@
 import { Controller } from "../controller/controller";
+import { random } from "../utils";
+import { Shield } from "./shield";
 import { Weapon } from "./weapon";
 
-export interface Character {
+export class Character {
 
     readonly name: string
-    readonly controller: Controller
-    
-    hp:      number,
-    defence: number,
-    power:   number,
-    weapon?:  Weapon
+    readonly controller: Controller;
 
+    hp: number;
+    defence: number;
+    power: number;
 
-    takeDamage(damage: number) : boolean
+    weapon?: Weapon = undefined;
+    shield?: Shield = undefined;
 
-    attack(enemy: Character): string
+    private eqiuped: boolean = false
 
-    defend(): string
+    constructor(controller: Controller, name: string, hp: number, defence: number, power: number) {
+        this.controller = controller
+        this.name = name
+        this.hp = hp
+        this.defence = defence
+        this.power = power
+    }
 
-    damage() : number
+    attack(enemy: Character): string {
+        if (random(1, 4) !== 1) {
+            let damage = this.damage()
+            enemy.takeDamage(damage)
+            return `${this.name} attacking ${enemy.name}. Damage ${damage}`
+        }
+        else {
+            return `${this.name} missing attack`
+        }
+    }
 
-    skip(): string
+    defend(): string {
+        if (this.eqiupShield()) {
+            return "Shield eqiuped. defence: " + this.defence
+        }
+        else {
+            return 'Shield already eqiuped.'
+        }
+    }
 
-    alive(): boolean
+    skip(): string {
+        return "passing"
+    }
 
-    details() : string
+    eqiupShield(): boolean {
+        if (this.shield && !this.eqiuped) {
+            this.defence += this.shield.defence
+            this.eqiuped = true
+            return true
+        }
+        else {
+            return false
+        }
+    }
 
-    eqiupShield(): boolean
+    removeShield() {
+        if (this.shield && this.eqiuped) {
+            this.defence -= this.shield.defence
+            this.eqiuped = false
+            return true
+        }
+        else {
+            return false
+        }
+    }
 
-    removeShield(): void
+    alive(): boolean {
+        return this.hp > 0
+    }
+
+    damage(): number {
+        return this.power + (this.weapon ? this.weapon.damage : 0)
+    }
+
+    takeDamage(damage: number): number {
+        this.hp -= damage - this.defence
+        return (damage - this.defence)
+    }
+
+    details(): string {
+        return `\nДетали ${this.name}: \n hp:      ${this.hp}\n defence: ${this.defence}\n power:   ${this.power}\n weapon:  ${this.weapon}\n shield:  ${this.shield}\n`
+    }
 }

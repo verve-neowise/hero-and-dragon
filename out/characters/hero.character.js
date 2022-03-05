@@ -25,7 +25,7 @@ class Hero {
     }
     defend() {
         if (this.eqiupShield()) {
-            return "Shield eqiuped.";
+            return "Shield eqiuped. defence: " + this.defence;
         }
         else {
             return 'Shield already eqiuped.';
@@ -61,8 +61,8 @@ class Hero {
         return this.power + (this.weapon ? this.weapon.damage : 0);
     }
     takeDamage(damage) {
-        this.hp -= damage;
-        return this.alive();
+        this.hp -= damage - this.defence;
+        return (damage - this.defence);
     }
     details() {
         return `\nДетали ${this.name}: \n hp:      ${this.hp}\n defence: ${this.defence}\n power:   ${this.power}\n weapon:  ${this.weapon}\n shield:  ${this.shield}\n`;

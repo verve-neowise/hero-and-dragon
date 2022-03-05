@@ -1,60 +1,81 @@
-import { Hero } from './characters/hero.character';
 import { IronShield } from './characters/shield';
 import { Sword } from './characters/weapon';
 import { Character } from './characters/character';
 import { random } from './utils';
 import { Controller } from './controller/controller';
 
-type action = (first: Character, second: Character) => Promise<void>
+class Action {
+
+    constructor(private _execution: (first: Character, second: Character) => Promise<void>) {}
+
+    async execute(first: Character, second: Character) {
+        await this._execution(first, second)
+    }
+}
 
 export class Game {
 
     readonly id: number
 
-    private hero: Hero
-    private dragon: Hero
+    private hero: Character
+    private dragon: Character
 
-    private game = 1
+    private game = 0
 
     private running = true
 
     constructor(id: number, heroController: Controller, dragonController: Controller) {
         this.id = id
-        this.hero = new Hero(heroController, 'Artur', 700, 100, 75)
+        this.hero = new Character(heroController, 'Artur', 700, 100, 75)
         this.hero.weapon = new Sword()
         this.hero.shield = new IronShield()
-        this.dragon = new Hero(dragonController, 'Dragone', 1500, 100, 120)
+        this.dragon = new Character(dragonController, 'Dragone', 1500, 100, 250)
     }
 
     async start() {
 
-        const actions = new Map<string, action>([
-            ['1', this.attack],
-            ['2', this.defend],
-            ['3', this.skip],
+        const actions = new Map<string, Action>([
+            ['1', new Action((first, second) => this.attack(first, second))],
+            ['2', new Action((first, second) => this.defend(first, second))],
+            ['3', new Action((first, second) => this.skip(first, second))],
         ])
 
         await this.sendForAll('Starting game #' + this.id)
 
+        let parts = [
+            [this.hero, this.dragon],
+            [this.dragon, this.hero],
+        ]
+
         while(this.running) {
-            await this.activate(this.hero, this.dragon, actions)
-            await this.activate(this.dragon, this.hero, actions)
+            
+            await this.sendForAll(this.information())
+
+            for(let i = 0; i < parts.length && this.running; ) {
+
+                if (await this.activate(parts[i], actions)) {
+                    i++
+                }
+            }
         }
     }
 
-    async activate(character: Character, enemy: Character, actions: Map<string, action>) {
+    private async activate([character, enemy]: Character[], actions: Map<string, Action>): Promise<boolean> {
         
-        await this.sendForAll(this.information()) 
-
         if (character.alive()) {
+
+            character.removeShield()
+
             let command = await character.controller.next('Your side: ')
             let action  = actions.get(command)
 
             if (action === undefined) {
                 await character.controller.say('Error: cannot find command ' + command)
+                return false
             }
             else {
-                await action(character, enemy)
+                await action.execute(character, enemy)
+                return true
             }
         }
         else {
@@ -62,30 +83,33 @@ export class Game {
             await enemy.controller.say('You win! :)')
 
             await this.stopGame()
+
+            return true;
         }
     }
 
-    async stopGame(): Promise<void> {  }
+    async stopGame(): Promise<void> { 
+        this.running = false 
+    }
 
-    async skip(character: Character, enemy: Character) {
+    private async skip(character: Character, enemy: Character) {
         await character.controller.say("Skipped")
         await enemy.controller.say(character.name + " skipped.")
     }
 
-    async defend(character: Character, enemy: Character) {
+    private async defend(character: Character, enemy: Character) {
         if (character.eqiupShield()) {
             await character.controller.say("Shield eqiuped.")
-            await enemy.controller.say(character.name + " defends.")
         }
         else {
             await character.controller.say("Shield already eqiuped.")
         }
+        await enemy.controller.say(character.name + " defends.")
     }
 
-    async attack(character: Character, enemy: Character) {
+    private async attack(character: Character, enemy: Character) {
         if (random(1, 4) !== 1) {
-            let damage = character.damage()
-            enemy.takeDamage(damage)
+            let damage = enemy.takeDamage(character.damage())
             await this.sendForAll(`${character.name} attacking ${enemy.name}. Damage ${damage}`)
         }
         else {
@@ -93,20 +117,19 @@ export class Game {
         }
     }
 
-    async sendForAll(message: string) {
+    private async sendForAll(message: string) {
         await this.hero.controller.say(message)
         await this.dragon.controller.say(message)
     }
 
-    information() {
+    private information() {
         return (
-        `----------- ${this.game} ------------
-        Герой: "  + ${this.hero.hp}
-        Дракон: " + ${this.dragon.hp}
-        `)
+        `----------- ${this.game + 1} ------------
+${this.hero.name}:    ${this.hero.hp}
+${this.dragon.name}:  ${this.dragon.hp}`)
     }
 
-    help() {
+    private help() {
         return (
         `Помощь
             -------- Игра -----------
