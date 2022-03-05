@@ -1,3 +1,5 @@
+import { Controller } from "../controller/controller";
+import { random } from "../utils";
 import { Character } from "./character";
 import { Shield } from "./shield";
 import { Weapon } from "./weapon";
@@ -5,6 +7,7 @@ import { Weapon } from "./weapon";
 export class Hero implements Character {
 
     readonly name: string
+    readonly controller: Controller;
 
     hp: number;
     defence: number;
@@ -15,11 +18,36 @@ export class Hero implements Character {
 
     private eqiuped: boolean = false
 
-    constructor(name: string, hp: number, defence: number, power: number) {
+    constructor(controller: Controller, name: string, hp: number, defence: number, power: number) {
+        this.controller = controller
         this.name = name
         this.hp = hp
         this.defence = defence
         this.power = power
+    }
+
+    attack(enemy: Character): string {
+        if (random(1, 4) !== 1) {
+            let damage = this.damage()
+            enemy.takeDamage(damage)
+            return `${this.name} attacking ${enemy.name}. Damage ${damage}`
+        }
+        else {
+            return `${this.name} missing attack`
+        }
+    }
+
+    defend(): string {
+        if (this.eqiupShield()) {
+            return "Shield eqiuped."
+        }
+        else {
+            return 'Shield already eqiuped.'
+        }
+    }
+
+    skip(): string {
+        return "passing"
     }
 
     eqiupShield(): boolean {

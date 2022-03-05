@@ -131,9 +131,6 @@ function info() {
     console.log(`----------- ${game++} ------------`);
     console.log("Герой: " + Hero.hp);
     console.log("Дракон: " + Dragon.hp);
-    // console.log(`--------------------------------------------------`);
-    // console.log(`Герой: ${Hero.hp}       |      Дракон: ${Dragon.hp}`);
-    // console.log(`--------------------------------------------------`);
 }
 function heroDetails() {
     console.log(`\nДетали Героя: \n hp:      ${Hero.hp}\n defence: ${Hero.defence}\n power:   ${Hero.power}\n weapon:  ${Hero.weapon}\n shield:  ${Hero.shield}\n`);
