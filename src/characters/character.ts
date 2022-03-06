@@ -1,4 +1,4 @@
-import { Controller } from "../controller/controller";
+import { IO } from "../io/io";
 import { random } from "../utils";
 import { Shield } from "./shield";
 import { Weapon } from "./weapon";
@@ -6,7 +6,7 @@ import { Weapon } from "./weapon";
 export class Character {
 
     readonly name: string
-    readonly controller: Controller;
+    readonly io: IO;
 
     hp: number;
     defence: number;
@@ -17,8 +17,8 @@ export class Character {
 
     private eqiuped: boolean = false
 
-    constructor(controller: Controller, name: string, hp: number, defence: number, power: number) {
-        this.controller = controller
+    constructor(io: IO, name: string, hp: number, defence: number, power: number) {
+        this.io = io
         this.name = name
         this.hp = hp
         this.defence = defence

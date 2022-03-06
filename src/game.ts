@@ -1,8 +1,5 @@
-import { IronShield } from './characters/shield';
-import { Sword } from './characters/weapon';
 import { Character } from './characters/character';
 import { random } from './utils';
-import { Controller } from './controller/controller';
 
 class Action {
 
@@ -24,12 +21,10 @@ export class Game {
 
     private running = true
 
-    constructor(id: number, heroController: Controller, dragonController: Controller) {
+    constructor(id: number, hero: Character, dragon: Character) {
         this.id = id
-        this.hero = new Character(heroController, 'Artur', 700, 100, 75)
-        this.hero.weapon = new Sword()
-        this.hero.shield = new IronShield()
-        this.dragon = new Character(dragonController, 'Dragone', 1500, 100, 250)
+        this.hero = hero
+        this.dragon = dragon
     }
 
     async start() {
@@ -66,11 +61,11 @@ export class Game {
 
             character.removeShield()
 
-            let command = await character.controller.next('Your side: ')
+            let command = await character.io.ask('Your side: ')
             let action  = actions.get(command)
 
             if (action === undefined) {
-                await character.controller.say('Error: cannot find command ' + command)
+                await character.io.send('Error: cannot find command ' + command)
                 return false
             }
             else {
@@ -79,8 +74,8 @@ export class Game {
             }
         }
         else {
-            await character.controller.say('You lose :(')
-            await enemy.controller.say('You win! :)')
+            await character.io.send('You lose :(')
+            await enemy.io.send('You win! :)')
 
             await this.stopGame()
 
@@ -93,18 +88,18 @@ export class Game {
     }
 
     private async skip(character: Character, enemy: Character) {
-        await character.controller.say("Skipped")
-        await enemy.controller.say(character.name + " skipped.")
+        await character.io.send("Skipped")
+        await enemy.io.send(character.name + " skipped.")
     }
 
     private async defend(character: Character, enemy: Character) {
         if (character.eqiupShield()) {
-            await character.controller.say("Shield eqiuped.")
+            await character.io.send("Shield eqiuped.")
         }
         else {
-            await character.controller.say("Shield already eqiuped.")
+            await character.io.send("Shield already eqiuped.")
         }
-        await enemy.controller.say(character.name + " defends.")
+        await enemy.io.send(character.name + " defends.")
     }
 
     private async attack(character: Character, enemy: Character) {
@@ -118,8 +113,8 @@ export class Game {
     }
 
     private async sendForAll(message: string) {
-        await this.hero.controller.say(message)
-        await this.dragon.controller.say(message)
+        await this.hero.io.send(message)
+        await this.dragon.io.send(message)
     }
 
     private information() {

@@ -3,11 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Character = void 0;
 const utils_1 = require("../utils");
 class Character {
-    constructor(controller, name, hp, defence, power) {
+    constructor(io, name, hp, defence, power) {
         this.weapon = undefined;
         this.shield = undefined;
         this.eqiuped = false;
-        this.controller = controller;
+        this.io = io;
         this.name = name;
         this.hp = hp;
         this.defence = defence;

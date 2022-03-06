@@ -1,11 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const ai_controller_1 = require("./controller/ai.controller");
-const console_controller_1 = require("./controller/console.controller");
+const character_1 = require("./characters/character");
 const game_1 = require("./game");
+const ai_io_1 = require("./io/ai.io");
 const console_io_1 = require("./io/console.io");
-let io = new console_io_1.ConsoleIO();
-let hero = new console_controller_1.ConsoleController(io);
-let dragone = new ai_controller_1.AIController();
+let hero = new character_1.Character(new console_io_1.ConsoleIO(), 'Artur', 700, 120, 50);
+let dragone = new character_1.Character(new ai_io_1.AiIO(), 'Dragone', 1500, 100, 120);
 let game = new game_1.Game(1, hero, dragone);
 game.start();

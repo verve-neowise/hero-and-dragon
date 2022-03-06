@@ -1,6 +1,7 @@
 import { IO } from "./io";
 
 import PromptSync from "prompt-sync";
+import { random } from "../utils";
 const prompt = PromptSync()
 
 export class ConsoleIO implements IO {

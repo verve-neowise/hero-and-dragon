@@ -1,9 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Game = void 0;
-const shield_1 = require("./characters/shield");
-const weapon_1 = require("./characters/weapon");
-const character_1 = require("./characters/character");
 const utils_1 = require("./utils");
 class Action {
     constructor(_execution) {
@@ -14,14 +11,12 @@ class Action {
     }
 }
 class Game {
-    constructor(id, heroController, dragonController) {
+    constructor(id, hero, dragon) {
         this.game = 0;
         this.running = true;
         this.id = id;
-        this.hero = new character_1.Character(heroController, 'Artur', 700, 100, 75);
-        this.hero.weapon = new weapon_1.Sword();
-        this.hero.shield = new shield_1.IronShield();
-        this.dragon = new character_1.Character(dragonController, 'Dragone', 1500, 100, 250);
+        this.hero = hero;
+        this.dragon = dragon;
     }
     async start() {
         const actions = new Map([
@@ -46,10 +41,10 @@ class Game {
     async activate([character, enemy], actions) {
         if (character.alive()) {
             character.removeShield();
-            let command = await character.controller.next('Your side: ');
+            let command = await character.io.ask('Your side: ');
             let action = actions.get(command);
             if (action === undefined) {
-                await character.controller.say('Error: cannot find command ' + command);
+                await character.io.send('Error: cannot find command ' + command);
                 return false;
             }
             else {
@@ -58,8 +53,8 @@ class Game {
             }
         }
         else {
-            await character.controller.say('You lose :(');
-            await enemy.controller.say('You win! :)');
+            await character.io.send('You lose :(');
+            await enemy.io.send('You win! :)');
             await this.stopGame();
             return true;
         }
@@ -68,17 +63,17 @@ class Game {
         this.running = false;
     }
     async skip(character, enemy) {
-        await character.controller.say("Skipped");
-        await enemy.controller.say(character.name + " skipped.");
+        await character.io.send("Skipped");
+        await enemy.io.send(character.name + " skipped.");
     }
     async defend(character, enemy) {
         if (character.eqiupShield()) {
-            await character.controller.say("Shield eqiuped.");
+            await character.io.send("Shield eqiuped.");
         }
         else {
-            await character.controller.say("Shield already eqiuped.");
+            await character.io.send("Shield already eqiuped.");
         }
-        await enemy.controller.say(character.name + " defends.");
+        await enemy.io.send(character.name + " defends.");
     }
     async attack(character, enemy) {
         if ((0, utils_1.random)(1, 4) !== 1) {
@@ -90,8 +85,8 @@ class Game {
         }
     }
     async sendForAll(message) {
-        await this.hero.controller.say(message);
-        await this.dragon.controller.say(message);
+        await this.hero.io.send(message);
+        await this.dragon.io.send(message);
     }
     information() {
         return (`----------- ${this.game + 1} ------------
