@@ -15,6 +15,7 @@ export class DefaultIO implements IO {
     send(message: string): Promise<void> {
         return this._send(message)
     }
+
     ask(message: string): Promise<string> {
         return this._ask(message)
     }

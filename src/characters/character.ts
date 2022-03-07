@@ -1,7 +1,6 @@
 import { IO } from "../io/io";
-import { random } from "../utils";
-import { Shield } from "./shield";
-import { Weapon } from "./weapon";
+import { Shield } from "../equipment";
+import { Weapon } from "../equipment";
 
 export class Character {
 
@@ -23,30 +22,6 @@ export class Character {
         this.hp = hp
         this.defence = defence
         this.power = power
-    }
-
-    attack(enemy: Character): string {
-        if (random(1, 4) !== 1) {
-            let damage = this.damage()
-            enemy.takeDamage(damage)
-            return `${this.name} attacking ${enemy.name}. Damage ${damage}`
-        }
-        else {
-            return `${this.name} missing attack`
-        }
-    }
-
-    defend(): string {
-        if (this.eqiupShield()) {
-            return "Shield eqiuped. defence: " + this.defence
-        }
-        else {
-            return 'Shield already eqiuped.'
-        }
-    }
-
-    skip(): string {
-        return "passing"
     }
 
     eqiupShield(): boolean {
@@ -82,6 +57,10 @@ export class Character {
     takeDamage(damage: number): number {
         this.hp -= damage - this.defence
         return (damage - this.defence)
+    }
+
+    update() {
+        this.removeShield()
     }
 
     details(): string {

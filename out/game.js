@@ -1,15 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Game = void 0;
-const utils_1 = require("./utils");
-class Action {
-    constructor(_execution) {
-        this._execution = _execution;
-    }
-    async execute(first, second) {
-        await this._execution(first, second);
-    }
-}
+const action_1 = require("./actions/action");
+const attack_action_1 = require("./actions/attack.action");
+const defend_action_1 = require("./actions/defend.action");
+const skip_action_1 = require("./actions/skip.action");
 class Game {
     constructor(id, hero, dragon) {
         this.game = 0;
@@ -20,9 +15,9 @@ class Game {
     }
     async start() {
         const actions = new Map([
-            ['1', new Action((first, second) => this.attack(first, second))],
-            ['2', new Action((first, second) => this.defend(first, second))],
-            ['3', new Action((first, second) => this.skip(first, second))],
+            ['1', attack_action_1.attack],
+            ['2', defend_action_1.defend],
+            ['3', skip_action_1.skip],
         ]);
         await this.sendForAll('Starting game #' + this.id);
         let parts = [
@@ -40,7 +35,7 @@ class Game {
     }
     async activate([character, enemy], actions) {
         if (character.alive()) {
-            character.removeShield();
+            character.update();
             let command = await character.io.ask('Your side: ');
             let action = actions.get(command);
             if (action === undefined) {
@@ -48,8 +43,7 @@ class Game {
                 return false;
             }
             else {
-                await action.execute(character, enemy);
-                return true;
+                return action(character, enemy);
             }
         }
         else {
@@ -62,49 +56,13 @@ class Game {
     async stopGame() {
         this.running = false;
     }
-    async skip(character, enemy) {
-        await character.io.send("Skipped");
-        await enemy.io.send(character.name + " skipped.");
-    }
-    async defend(character, enemy) {
-        if (character.eqiupShield()) {
-            await character.io.send("Shield eqiuped.");
-        }
-        else {
-            await character.io.send("Shield already eqiuped.");
-        }
-        await enemy.io.send(character.name + " defends.");
-    }
-    async attack(character, enemy) {
-        if ((0, utils_1.random)(1, 4) !== 1) {
-            let damage = enemy.takeDamage(character.damage());
-            await this.sendForAll(`${character.name} attacking ${enemy.name}. Damage ${damage}`);
-        }
-        else {
-            await this.sendForAll(`${character.name} missing attack`);
-        }
-    }
     async sendForAll(message) {
-        await this.hero.io.send(message);
-        await this.dragon.io.send(message);
+        await (0, action_1.sendFor)(message, this.hero, this.dragon);
     }
     information() {
         return (`----------- ${this.game + 1} ------------
 ${this.hero.name}:    ${this.hero.hp}
 ${this.dragon.name}:  ${this.dragon.hp}`);
-    }
-    help() {
-        return (`Помощь
-            -------- Игра -----------
-            ?      ->  список комманд
-            h      ->  данные героя
-            d      ->  данные Дракона
-            \n-------- Герой -----------
-            1      ->  Атаковать
-            2      ->  Защита
-            3      ->  Пропустить ход
-            q   ->  Убежать
-        `);
     }
 }
 exports.Game = Game;

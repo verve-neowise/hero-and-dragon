@@ -1,14 +1,8 @@
+import { Action, sendFor } from './actions/action';
+import { attack } from './actions/attack.action';
+import { defend } from './actions/defend.action';
+import { skip } from './actions/skip.action';
 import { Character } from './characters/character';
-import { random } from './utils';
-
-class Action {
-
-    constructor(private _execution: (first: Character, second: Character) => Promise<void>) {}
-
-    async execute(first: Character, second: Character) {
-        await this._execution(first, second)
-    }
-}
 
 export class Game {
 
@@ -30,9 +24,9 @@ export class Game {
     async start() {
 
         const actions = new Map<string, Action>([
-            ['1', new Action((first, second) => this.attack(first, second))],
-            ['2', new Action((first, second) => this.defend(first, second))],
-            ['3', new Action((first, second) => this.skip(first, second))],
+            ['1', attack],
+            ['2', defend],
+            ['3', skip],
         ])
 
         await this.sendForAll('Starting game #' + this.id)
@@ -59,7 +53,7 @@ export class Game {
         
         if (character.alive()) {
 
-            character.removeShield()
+            character.update()
 
             let command = await character.io.ask('Your side: ')
             let action  = actions.get(command)
@@ -69,8 +63,7 @@ export class Game {
                 return false
             }
             else {
-                await action.execute(character, enemy)
-                return true
+                return action(character, enemy)
             }
         }
         else {
@@ -79,7 +72,7 @@ export class Game {
 
             await this.stopGame()
 
-            return true;
+            return true
         }
     }
 
@@ -87,34 +80,8 @@ export class Game {
         this.running = false 
     }
 
-    private async skip(character: Character, enemy: Character) {
-        await character.io.send("Skipped")
-        await enemy.io.send(character.name + " skipped.")
-    }
-
-    private async defend(character: Character, enemy: Character) {
-        if (character.eqiupShield()) {
-            await character.io.send("Shield eqiuped.")
-        }
-        else {
-            await character.io.send("Shield already eqiuped.")
-        }
-        await enemy.io.send(character.name + " defends.")
-    }
-
-    private async attack(character: Character, enemy: Character) {
-        if (random(1, 4) !== 1) {
-            let damage = enemy.takeDamage(character.damage())
-            await this.sendForAll(`${character.name} attacking ${enemy.name}. Damage ${damage}`)
-        }
-        else {
-            await this.sendForAll(`${character.name} missing attack`)
-        }
-    }
-
     private async sendForAll(message: string) {
-        await this.hero.io.send(message)
-        await this.dragon.io.send(message)
+        await sendFor(message, this.hero, this.dragon)
     }
 
     private information() {
@@ -124,18 +91,18 @@ ${this.hero.name}:    ${this.hero.hp}
 ${this.dragon.name}:  ${this.dragon.hp}`)
     }
 
-    private help() {
-        return (
-        `Помощь
-            -------- Игра -----------
-            ?      ->  список комманд
-            h      ->  данные героя
-            d      ->  данные Дракона
-            \n-------- Герой -----------
-            1      ->  Атаковать
-            2      ->  Защита
-            3      ->  Пропустить ход
-            q   ->  Убежать
-        `)
-    }
+    // private help() {
+    //     return (
+    //     `Помощь
+    //         -------- Игра -----------
+    //         ?      ->  список комманд
+    //         h      ->  данные героя
+    //         d      ->  данные Дракона
+    //         \n-------- Герой -----------
+    //         1      ->  Атаковать
+    //         2      ->  Защита
+    //         3      ->  Пропустить ход
+    //         q   ->  Убежать
+    //     `)
+    // }
 }
